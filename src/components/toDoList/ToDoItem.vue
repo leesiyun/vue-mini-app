@@ -2,6 +2,9 @@
   import {ref, defineProps, defineEmits, onMounted, onBeforeUnmount} from 'vue'
 
   const props = defineProps({
+    toDos: {
+      type: Array,
+    },
     toDo: {
       type: Object,
     },
@@ -10,17 +13,15 @@
     },
   })
 
-  const emits = defineEmits([
-    'updateToDo',
-    'deleteToDo',
-    'toggleCheckToDo',
-    'changeEdit',
-  ])
+  const emits = defineEmits(['update:toDos', 'update:isEditing'])
 
   const editText = ref('')
   const componentRef = ref()
-  const showEdit = () => emits('changeEdit', props.toDo.id, true)
-  const hiddenEdit = () => emits('changeEdit', props.toDo.id, false)
+
+  const showEdit = () =>
+    emits('update:isEditing', {...props.isEditing, [props.toDo.id]: true})
+  const hiddenEdit = () =>
+    emits('update:isEditing', {...props.isEditing, [props.toDo.id]: false})
 
   const editToDo = () => {
     editText.value = props.toDo.value
@@ -29,14 +30,31 @@
 
   const updateToDo = () => {
     if (editText.value.trim() && editText.value !== props.toDo.id) {
-      emits('updateToDo', props.toDo.id, editText.value)
+      emits(
+        'update:toDos',
+        props.toDos.map(item =>
+          item.id === props.toDo.id ? {...item, value: editText.value} : item,
+        ),
+      )
     }
     hiddenEdit()
   }
 
-  const deleteToDo = () => emits('deleteToDo', props.toDo.id)
+  const deleteToDo = () =>
+    emits(
+      'update:toDos',
+      props.toDos.filter(item => item.id !== props.toDo.id),
+    )
 
-  const toggleCheckToDo = () => emits('toggleCheckToDo', props.toDo.id)
+  const toggleCheckToDo = () =>
+    emits(
+      'update:toDos',
+      props.toDos.map(item =>
+        item.id === props.toDo.id
+          ? {...item, isChecked: !item.isChecked}
+          : item,
+      ),
+    )
 
   const useDetectOutsideClick = component => {
     const handleOutsideClick = event => {
@@ -63,27 +81,26 @@
 
 <template>
   <div ref="componentRef" class="todo-list-wrapper">
-    <button v-if="toDo.isChecked" @click="toggleCheckToDo()">
+    <button v-if="toDo.isChecked" @click="toggleCheckToDo">
       <FaIcon icon="circle-check" />
     </button>
-    <button v-else @click="toggleCheckToDo()">
+    <button v-else @click="toggleCheckToDo">
       <FaIcon icon="fa-regular fa-circle" />
     </button>
     <div>
       <div v-if="isEditing[toDo.id]" class="todo-list">
         <p>
           <input
-            :id="index"
             v-model="editText"
             :placeholder="toDo"
-            @keypress.enter="updateToDo()"
+            @keypress.enter="updateToDo"
           />
         </p>
         <div>
-          <button @click="updateToDo()">
+          <button @click="updateToDo">
             <FaIcon icon="check" class="checkbox" />
           </button>
-          <button @click="hiddenEdit()">
+          <button @click="hiddenEdit">
             <FaIcon icon="xmark" />
           </button>
         </div>
@@ -94,10 +111,10 @@
           {{ toDo.value }}
         </p>
         <div>
-          <button @click="editToDo()">
+          <button @click="editToDo">
             <FaIcon icon="pen" />
           </button>
-          <button @click="deleteToDo()">
+          <button @click="deleteToDo">
             <FaIcon icon="trash" />
           </button>
         </div>
@@ -148,6 +165,7 @@
       background-color: #fff;
       border: none;
       margin-left: 6px;
+      cursor: pointer;
     }
   }
 </style>
