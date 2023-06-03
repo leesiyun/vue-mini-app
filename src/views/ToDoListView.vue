@@ -2,21 +2,19 @@
   import {ToDoInput, ToDoFilter, ToDoItem} from '@/components/toDoList'
   import {ref, watch} from 'vue'
 
-  const localStorageItem = localStorage.getItem('toDos')
-  const toDos = ref(localStorageItem ? JSON.parse(localStorageItem) : [])
-  const filteredToDos = ref(toDos.value ? toDos.value : [])
+  const toDos = ref(JSON.parse(localStorage.getItem('toDos')) || [])
   const filterState = ref('all')
   const isEditing = ref({})
 
   const saveLocalStorage = () =>
     localStorage.setItem('toDos', JSON.stringify(toDos.value))
 
-  const getFilteredToDos = state => {
-    if (state === 'all') filteredToDos.value = toDos.value
-    if (state === 'active')
-      filteredToDos.value = toDos.value.filter(item => !item.isChecked)
-    if (state === 'completed')
-      filteredToDos.value = toDos.value.filter(item => item.isChecked)
+  const getFilteredToDos = filterState => {
+    if (filterState === 'all') return toDos.value
+    if (filterState === 'active')
+      return toDos.value.filter(({isChecked}) => !isChecked)
+    if (filterState === 'completed')
+      return toDos.value.filter(({isChecked}) => isChecked)
   }
 
   watch(toDos, () => {
@@ -28,13 +26,10 @@
 <template>
   <div class="todo">
     <div class="todo-wrapper">
-      <ToDoInput v-model:toDos="toDos" />
-      <ToDoFilter
-        v-model:filterState="filterState"
-        @get-filtered-to-dos="getFilteredToDos"
-      />
+      <ToDoInput v-model="toDos" />
+      <ToDoFilter v-model="filterState" />
       <ToDoItem
-        v-for="toDo in filteredToDos"
+        v-for="toDo in getFilteredToDos(filterState)"
         :key="toDo.id"
         :to-do="toDo"
         v-model:toDos="toDos"

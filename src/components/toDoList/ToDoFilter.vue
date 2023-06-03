@@ -2,38 +2,29 @@
   import {defineProps, defineEmits} from 'vue'
 
   const props = defineProps({
-    filterState: {
+    modelValue: {
       type: String,
     },
   })
 
-  const emits = defineEmits(['update:filterState', 'getFilteredToDos'])
+  const emits = defineEmits(['update:modelValue'])
 
-  const changeFilterState = state => {
-    emits('update:filterState', state)
-    emits('getFilteredToDos', state)
+  const changeFilterState = filterState => {
+    emits('update:modelValue', filterState)
   }
+
+  const filterStates = ['all', 'active', 'completed']
 </script>
 
 <template>
   <div class="filter">
     <button
-      :class="{active: props.filterState === 'all'}"
-      @click="changeFilterState('all')"
+      v-for="(filterState, index) in filterStates"
+      :key="index"
+      :class="{active: props.modelValue === filterState}"
+      @click="changeFilterState(filterState)"
     >
-      ● all
-    </button>
-    <button
-      :class="{active: props.filterState === 'active'}"
-      @click="changeFilterState('active')"
-    >
-      ● active
-    </button>
-    <button
-      :class="{active: props.filterState === 'completed'}"
-      @click="changeFilterState('completed')"
-    >
-      ● completed
+      ● {{ filterState }}
     </button>
   </div>
 </template>

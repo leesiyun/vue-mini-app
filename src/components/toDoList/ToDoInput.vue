@@ -2,21 +2,21 @@
   import {ref, computed, defineEmits} from 'vue'
 
   const props = defineProps({
-    toDos: {
+    modelValue: {
       type: Array,
     },
   })
 
-  const emits = defineEmits(['update:toDos'])
+  const emits = defineEmits(['update:modelValue'])
 
   const newToDo = ref('')
 
   const addToDo = () => {
     if (newToDo.value.trim()) {
-      emits('update:toDos', [
-        ...props.toDos,
+      emits('update:modelValue', [
+        ...props.modelValue,
         {
-          id: props.toDos.length > 0 ? props.toDos.at(-1).id + 1 : 1,
+          id: props.modelValue.length > 0 ? props.modelValue.at(-1).id + 1 : 1,
           value: newToDo.value,
           isChecked: false,
         },
@@ -26,7 +26,7 @@
   }
 
   const resetToDos = () => {
-    emits('update:toDos', [])
+    emits('update:modelValue', [])
   }
 </script>
 
